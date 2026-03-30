@@ -8,88 +8,216 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f5f5; color: #333; }
+
     header { background: #1a1a2e; color: #fff; padding: 20px 24px; }
     header h1 { font-size: 1.4rem; }
     header p { font-size: 0.85rem; color: #aaa; margin-top: 4px; }
-    .layout { display: flex; min-height: calc(100vh - 68px); }
-    aside { width: 180px; flex-shrink: 0; background: #fff; border-right: 1px solid #ddd; padding: 16px 0; }
-    aside ul { list-style: none; }
-    aside ul li a { display: block; padding: 10px 20px; font-size: 0.9rem; color: #444; text-decoration: none; border-left: 3px solid transparent; }
-    aside ul li a:hover, aside ul li a.active { background: #f0f4ff; color: #1a1a2e; border-left-color: #4a6cf7; font-weight: 600; }
-    main { flex: 1; padding: 32px; max-width: 860px; }
-    #content h1 { font-size: 1.4rem; margin-bottom: 16px; color: #1a1a2e; }
-    #content h2 { font-size: 1.05rem; margin: 24px 0 10px; border-bottom: 2px solid #e0e0e0; padding-bottom: 6px; color: #333; }
-    #content ul { padding-left: 0; list-style: none; }
-    #content ul li { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; line-height: 1.8; }
-    #content strong { color: #1a1a2e; }
-    #content a { color: #4a6cf7; word-break: break-all; }
-    #content hr { border: none; border-top: 1px solid #eee; margin: 24px 0; }
-    #placeholder { color: #999; font-size: 1rem; margin-top: 60px; text-align: center; }
+
+    /* Tabs */
+    .tabs { display: flex; background: #fff; border-bottom: 2px solid #e0e0e0; }
+    .tab-btn {
+      flex: 1; padding: 14px; font-size: 0.95rem; font-weight: 600;
+      background: none; border: none; cursor: pointer; color: #888;
+      border-bottom: 3px solid transparent; margin-bottom: -2px;
+    }
+    .tab-btn.active { color: #1a1a2e; border-bottom-color: #4a6cf7; }
+
+    /* Panels */
+    .panel { display: none; padding: 28px 24px; max-width: 860px; margin: 0 auto; }
+    .panel.active { display: block; }
+
+    /* Manual panel */
+    .manual-meta { font-size: 0.82rem; color: #aaa; margin-bottom: 20px; }
+
+    /* Auto panel selectors */
+    .selectors { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+    .selectors select {
+      padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px;
+      font-size: 0.9rem; background: #fff; color: #333; cursor: pointer;
+    }
+    .selectors select:disabled { color: #bbb; cursor: default; }
+
+    /* Content */
+    .md-content h1 { font-size: 1.4rem; margin-bottom: 16px; color: #1a1a2e; }
+    .md-content h2 { font-size: 1.05rem; margin: 24px 0 10px; border-bottom: 2px solid #e0e0e0; padding-bottom: 6px; color: #333; }
+    .md-content ul { padding-left: 0; list-style: none; }
+    .md-content ul li { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; line-height: 1.8; }
+    .md-content strong { color: #1a1a2e; }
+    .md-content a { color: #4a6cf7; word-break: break-all; }
+    .md-content hr { border: none; border-top: 1px solid #eee; margin: 24px 0; }
+    .md-content blockquote { border-left: 3px solid #ddd; padding-left: 12px; color: #888; margin: 8px 0; }
+
+    .placeholder { color: #999; font-size: 1rem; margin-top: 40px; text-align: center; }
+
     @media (max-width: 600px) {
-      .layout { flex-direction: column; }
-      aside { width: 100%; border-right: none; border-bottom: 1px solid #ddd; overflow-x: auto; }
-      aside ul { display: flex; padding: 0 8px; }
-      aside ul li a { white-space: nowrap; padding: 10px 14px; border-left: none; border-bottom: 3px solid transparent; }
-      aside ul li a.active { border-left-color: transparent; border-bottom-color: #4a6cf7; }
-      main { padding: 20px 16px; }
+      .panel { padding: 20px 16px; }
+      .selectors { gap: 8px; }
+      .selectors select { font-size: 0.85rem; padding: 7px 10px; }
     }
   </style>
 </head>
 <body>
   <header>
     <h1>📅 台南活動記錄</h1>
-    <p>每日活動彙整・來源：台南文化局、文化中心、美術館、各大場館</p>
+    <p>來源：台南文化局、文化中心、美術館、各大場館</p>
   </header>
-  <div class="layout">
-    <aside>
-      <ul id="date-list"><li style="padding:16px;color:#999;font-size:0.85rem">載入中…</li></ul>
-    </aside>
-    <main>
-      <div id="content"><p id="placeholder">← 選擇左側日期查看活動</p></div>
-    </main>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('manual')">手動推送</button>
+    <button class="tab-btn" onclick="switchTab('auto')">自動推送</button>
   </div>
+
+  <!-- 手動推送 -->
+  <div id="panel-manual" class="panel active">
+    <p class="manual-meta" id="manual-meta">載入中…</p>
+    <div class="md-content" id="manual-content"><p class="placeholder">載入中…</p></div>
+  </div>
+
+  <!-- 自動推送 -->
+  <div id="panel-auto" class="panel">
+    <div class="selectors">
+      <select id="sel-year" onchange="onYearChange()"><option>—</option></select>
+      <select id="sel-month" onchange="onMonthChange()" disabled><option>—</option></select>
+      <select id="sel-week" onchange="onWeekChange()" disabled><option>—</option></select>
+    </div>
+    <div class="md-content" id="auto-content"><p class="placeholder">請選擇年份</p></div>
+  </div>
+
   <script>
-    async function loadDates() {
+    let datesData = null;
+
+    // ── Tab ──────────────────────────────────────────
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach((b, i) =>
+        b.classList.toggle('active', (i === 0) === (tab === 'manual'))
+      );
+      document.getElementById('panel-manual').classList.toggle('active', tab === 'manual');
+      document.getElementById('panel-auto').classList.toggle('active', tab === 'auto');
+    }
+
+    // ── Helpers ──────────────────────────────────────
+    function addDays(dateStr, n) {
+      const d = new Date(dateStr + 'T00:00:00');
+      d.setDate(d.getDate() + n);
+      return d.toISOString().slice(0, 10);
+    }
+    function fmtMMDD(dateStr) {
+      return dateStr.slice(5).replace('-', '/');
+    }
+    function weekLabel(startDate) {
+      const end = addDays(startDate, 6);
+      return `${fmtMMDD(startDate)}–${fmtMMDD(end)}`;
+    }
+    function resetSelect(sel, placeholder) {
+      sel.innerHTML = `<option value="">${placeholder}</option>`;
+      sel.disabled = true;
+    }
+
+    // ── Manual ───────────────────────────────────────
+    async function loadManual(updated) {
+      const metaEl = document.getElementById('manual-meta');
+      const contentEl = document.getElementById('manual-content');
+      metaEl.textContent = updated ? `最後更新：${updated}` : '尚無資料';
+      if (!updated) { contentEl.innerHTML = '<p class="placeholder">尚無手動推送資料</p>'; return; }
+      try {
+        const res = await fetch('output/manual/latest.md?t=' + Date.now());
+        if (!res.ok) throw new Error();
+        contentEl.innerHTML = marked.parse(await res.text());
+      } catch {
+        contentEl.innerHTML = '<p style="color:#c00">內容載入失敗</p>';
+      }
+    }
+
+    // ── Auto – selectors ─────────────────────────────
+    function onYearChange() {
+      const year = document.getElementById('sel-year').value;
+      const selMonth = document.getElementById('sel-month');
+      const selWeek = document.getElementById('sel-week');
+      resetSelect(selMonth, '選擇月份');
+      resetSelect(selWeek, '選擇週次');
+      document.getElementById('auto-content').innerHTML = '<p class="placeholder">請選擇月份</p>';
+      if (!year || !datesData?.auto?.[year]) return;
+
+      const months = Object.keys(datesData.auto[year]).sort((a, b) => b.localeCompare(a));
+      selMonth.innerHTML = '<option value="">選擇月份</option>';
+      months.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m;
+        opt.textContent = `${year}/${m}`;
+        selMonth.appendChild(opt);
+      });
+      selMonth.disabled = false;
+    }
+
+    function onMonthChange() {
+      const year = document.getElementById('sel-year').value;
+      const month = document.getElementById('sel-month').value;
+      const selWeek = document.getElementById('sel-week');
+      resetSelect(selWeek, '選擇週次');
+      document.getElementById('auto-content').innerHTML = '<p class="placeholder">請選擇週次</p>';
+      if (!year || !month || !datesData?.auto?.[year]?.[month]) return;
+
+      const weeks = [...datesData.auto[year][month]].sort((a, b) => b.localeCompare(a));
+      selWeek.innerHTML = '<option value="">選擇週次</option>';
+      weeks.forEach(startDate => {
+        const opt = document.createElement('option');
+        opt.value = startDate;
+        opt.textContent = weekLabel(startDate);
+        selWeek.appendChild(opt);
+      });
+      selWeek.disabled = false;
+    }
+
+    async function onWeekChange() {
+      const startDate = document.getElementById('sel-week').value;
+      const contentEl = document.getElementById('auto-content');
+      if (!startDate) { contentEl.innerHTML = '<p class="placeholder">請選擇週次</p>'; return; }
+
+      const year = startDate.slice(0, 4);
+      try {
+        const res = await fetch(`output/auto/${year}/${startDate}.md?t=` + Date.now());
+        if (!res.ok) throw new Error();
+        contentEl.innerHTML = marked.parse(await res.text());
+      } catch {
+        contentEl.innerHTML = '<p style="color:#c00">內容載入失敗</p>';
+      }
+    }
+
+    // ── Init ─────────────────────────────────────────
+    async function init() {
       try {
         const res = await fetch('dates.json?t=' + Date.now());
-        const dates = await res.json();
-        const list = document.getElementById('date-list');
-        list.innerHTML = '';
-        if (!dates.length) {
-          list.innerHTML = '<li style="padding:16px;color:#999;font-size:0.85rem">尚無資料</li>';
-          return;
+        datesData = await res.json();
+
+        // 相容舊格式（array）
+        if (Array.isArray(datesData)) {
+          datesData = { manual: { updated: datesData[0] || null }, auto: {} };
         }
-        dates.sort((a, b) => b.localeCompare(a));
-        dates.forEach((d, i) => {
-          const li = document.createElement('li');
-          const a = document.createElement('a');
-          a.href = '#';
-          a.textContent = d;
-          a.dataset.date = d;
-          a.addEventListener('click', (e) => { e.preventDefault(); loadContent(d); });
-          li.appendChild(a);
-          list.appendChild(li);
-          if (i === 0) loadContent(d);
-        });
-      } catch (e) {
-        document.getElementById('date-list').innerHTML = '<li style="padding:16px;color:#c00;font-size:0.85rem">載入失敗</li>';
+
+        // 手動區塊
+        loadManual(datesData.manual?.updated || null);
+
+        // 自動區塊 – 年份選單
+        const selYear = document.getElementById('sel-year');
+        const years = Object.keys(datesData.auto || {}).sort((a, b) => b.localeCompare(a));
+        if (years.length) {
+          selYear.innerHTML = '<option value="">選擇年份</option>';
+          years.forEach(y => {
+            const opt = document.createElement('option');
+            opt.value = y;
+            opt.textContent = y;
+            selYear.appendChild(opt);
+          });
+          selYear.disabled = false;
+        } else {
+          selYear.innerHTML = '<option value="">尚無自動資料</option>';
+        }
+      } catch {
+        document.getElementById('manual-content').innerHTML = '<p style="color:#c00">dates.json 載入失敗</p>';
       }
     }
 
-    async function loadContent(date) {
-      document.querySelectorAll('#date-list a').forEach(a => {
-        a.classList.toggle('active', a.dataset.date === date);
-      });
-      try {
-        const res = await fetch('output/' + date + '.md?t=' + Date.now());
-        const md = await res.text();
-        document.getElementById('content').innerHTML = marked.parse(md);
-      } catch (e) {
-        document.getElementById('content').innerHTML = '<p style="color:#c00">內容載入失敗</p>';
-      }
-    }
-
-    loadDates();
+    init();
   </script>
 </body>
 </html>
